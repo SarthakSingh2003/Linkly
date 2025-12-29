@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../constants/app_colors.dart';
+import '../utils/responsive_utils.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -13,6 +15,8 @@ class CustomTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final int? maxLines;
   final bool enabled;
+  final Color? borderColor;
+  final Color? focusedBorderColor;
 
   const CustomTextField({
     super.key,
@@ -27,6 +31,8 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.maxLines = 1,
     this.enabled = true,
+    this.borderColor,
+    this.focusedBorderColor,
   });
 
   @override
@@ -36,68 +42,107 @@ class CustomTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.grey700,
+          style: TextStyle(
+            fontSize: ResponsiveUtils.getFontSize(context, baseSize: 14),
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
+            letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          validator: validator,
-          onChanged: onChanged,
-          maxLines: maxLines,
-          enabled: enabled,
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.grey900,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(
-              color: AppColors.grey400,
-              fontSize: 16,
-            ),
-            prefixIcon: prefixIcon != null
-                ? Icon(
-                    prefixIcon,
-                    color: AppColors.grey500,
-                    size: 20,
-                  )
-                : null,
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: AppColors.grey50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.grey300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.grey300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.error),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.grey200),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
+        SizedBox(height: ResponsiveUtils.getSpacing(context, small: 8, medium: 10, large: 12)),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: enabled
+                      ? [
+                          const Color(0xFF1F295B).withOpacity(0.6),
+                          const Color(0xFF283B89).withOpacity(0.5),
+                        ]
+                      : [
+                          const Color(0xFF2A2F50).withOpacity(0.4),
+                          const Color(0xFF1A1F3A).withOpacity(0.3),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                border: Border.all(
+                  color: enabled
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: TextFormField(
+                controller: controller,
+                obscureText: obscureText,
+                keyboardType: keyboardType,
+                validator: validator,
+                onChanged: onChanged,
+                maxLines: maxLines,
+                enabled: enabled,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getFontSize(context, baseSize: 15),
+                  color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.2,
+                ),
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: TextStyle(
+                    color: AppColors.textSecondary.withOpacity(0.7),
+                    fontSize: ResponsiveUtils.getFontSize(context, baseSize: 15),
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.2,
+                  ),
+                  prefixIcon: prefixIcon != null
+                      ? Icon(
+                          prefixIcon,
+                          color: AppColors.textPrimary.withOpacity(0.7),
+                          size: ResponsiveUtils.getIconSize(context, baseSize: 20),
+                        )
+                      : null,
+                  suffixIcon: suffixIcon,
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: BorderSide(
+                      color: focusedBorderColor ?? AppColors.primary.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: const BorderSide(color: AppColors.error, width: 1),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: ResponsiveUtils.getSymmetricPadding(
+                    context,
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

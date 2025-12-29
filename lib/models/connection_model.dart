@@ -9,6 +9,7 @@ class ConnectionModel {
   final String? contactPhone;
   final String? contactCompany;
   final String? connectionNote;
+  final String? groupId;
   final String connectionMethod;
   final DateTime createdAt;
   final bool isNewConnection;
@@ -22,23 +23,47 @@ class ConnectionModel {
     this.contactPhone,
     this.contactCompany,
     this.connectionNote,
+    this.groupId,
     required this.connectionMethod,
     required this.createdAt,
     this.isNewConnection = true,
   });
 
   factory ConnectionModel.fromMap(Map<String, dynamic> map) {
+    DateTime safeCreatedAt;
+    final dynamic created = map['createdAt'];
+    if (created is Timestamp) {
+      safeCreatedAt = created.toDate();
+    } else if (created is DateTime) {
+      safeCreatedAt = created;
+    } else if (created is String) {
+      // Attempt to parse ISO strings if present
+      safeCreatedAt = DateTime.tryParse(created) ?? DateTime.fromMillisecondsSinceEpoch(0);
+    } else {
+      // Fallback for legacy docs missing createdAt
+      safeCreatedAt = DateTime.fromMillisecondsSinceEpoch(0);
+    }
+
+    String asString(dynamic v) => v is String ? v : (v?.toString() ?? '');
+
     return ConnectionModel(
-      id: map['id'] ?? '',
-      userId: map['userId'] ?? '',
-      contactUserId: map['contactUserId'] ?? '',
-      contactName: map['contactName'] ?? '',
-      contactEmail: map['contactEmail'] ?? '',
-      contactPhone: map['contactPhone'],
-      contactCompany: map['contactCompany'],
-      connectionNote: map['connectionNote'],
-      connectionMethod: map['connectionMethod'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      id: asString(map['id']),
+      userId: asString(map['userId']),
+      contactUserId: asString(
+        map['contactUserId'] ?? map['contactUid'] ?? map['contact_id'] ?? map['contact'],
+      ),
+      contactName: asString(
+        map['contactName'] ?? map['name'] ?? map['fullName'] ?? map['displayName'],
+      ),
+      contactEmail: asString(
+        map['contactEmail'] ?? map['email'] ?? map['mail'],
+      ),
+      contactPhone: (map['contactPhone'] ?? map['phoneNumber'] ?? map['phone'] ?? map['mobile']) as String?,
+      contactCompany: (map['contactCompany'] ?? map['company'] ?? map['organization'] ?? map['org']) as String?,
+      connectionNote: map['connectionNote'] as String?,
+      groupId: asString(map['groupId'] ?? map['groupID']),
+      connectionMethod: asString(map['connectionMethod'] ?? map['method']),
+      createdAt: safeCreatedAt,
       isNewConnection: map['isNewConnection'] ?? true,
     );
   }
@@ -53,6 +78,7 @@ class ConnectionModel {
       'contactPhone': contactPhone,
       'contactCompany': contactCompany,
       'connectionNote': connectionNote,
+      'groupId': groupId,
       'connectionMethod': connectionMethod,
       'createdAt': Timestamp.fromDate(createdAt),
       'isNewConnection': isNewConnection,
@@ -68,6 +94,7 @@ class ConnectionModel {
     String? contactPhone,
     String? contactCompany,
     String? connectionNote,
+    String? groupId,
     String? connectionMethod,
     DateTime? createdAt,
     bool? isNewConnection,
@@ -81,6 +108,7 @@ class ConnectionModel {
       contactPhone: contactPhone ?? this.contactPhone,
       contactCompany: contactCompany ?? this.contactCompany,
       connectionNote: connectionNote ?? this.connectionNote,
+      groupId: groupId ?? this.groupId,
       connectionMethod: connectionMethod ?? this.connectionMethod,
       createdAt: createdAt ?? this.createdAt,
       isNewConnection: isNewConnection ?? this.isNewConnection,
